@@ -25,14 +25,13 @@ export function applyShotPose(shotName, ctx) {
     for (let i = 0; i < 6; i++) mission.rings[i].cleared = true;
     setMissionBanner(mission, 'RING 6/8 CLEARED — RUNWAY AHEAD IN VALLEY', 'success', 5);
 
-    // Frame the bush plane banking cleanly toward Ring 7, Ring 8, and Runway 36 beyond.
+    // Frame the bush plane near-level (gentle ~6 deg bank) aiming cleanly through Ring 7 toward Ring 8 & Runway 36.
     const r7 = mission.rings[6];
-    const r8 = mission.rings[7];
     const px = r7.x + 18;
     const pz = r7.z + 185;
     const py = r7.y + 18;
-    const dx = r8.x - px;
-    const dz = r8.z - pz;
+    const dx = r7.x - px;
+    const dz = r7.z - pz;
     const yaw = Math.atan2(-dx, -dz);
 
     const state = createFlightState({
@@ -41,26 +40,26 @@ export function applyShotPose(shotName, ctx) {
       z: pz,
       speed: 44.5,
       yaw,
-      pitch: -0.055,
-      roll: 0.24,
+      pitch: -0.025,
+      roll: 0.10,
       throttle: 0.72,
       fuel: 68,
     });
     state.hull = 100;
     state.agl = Math.max(0, state.pos.y - world.terrainHeight(state.pos.x, state.pos.z) - FLIGHT_CONFIG.gearOffset);
-    state.vsiFpm = -180;
+    state.vsiFpm = -120;
 
     world.applyLighting('ring-run');
     world.update(18.5, new THREE.Vector3(state.pos.x, state.pos.y, state.pos.z));
     ringVisuals.sync(mission, 18.5);
-    plane.update(state, { pitch: 0.1, roll: -0.35 }, 0, 18.5, false);
+    plane.update(state, { pitch: 0.04, roll: -0.1 }, 0, 18.5, false);
     plane.setPropSpin(0.65, 0.85);
 
-    // Hero chase camera framing plane in lower-center, glowing rings and runway straight ahead.
-    const behindX = Math.sin(yaw) * 18.8 + Math.cos(yaw) * 0.4;
-    const behindZ = Math.cos(yaw) * 18.8 - Math.sin(yaw) * 0.4;
-    camera.position.set(state.pos.x + behindX, state.pos.y + 5.6, state.pos.z + behindZ);
-    camera.lookAt(r7.x - 10, r7.y - 3, r7.z - 90);
+    // Centered chase camera behind the aircraft framing near-level wings, glowing Ring 7, Ring 8, and valley runway.
+    const behindX = Math.sin(yaw) * 18.6;
+    const behindZ = Math.cos(yaw) * 18.6;
+    camera.position.set(state.pos.x + behindX, state.pos.y + 5.4, state.pos.z + behindZ);
+    camera.lookAt(r7.x - 4, r7.y - 4, r7.z - 95);
 
     setOverlayState('flying');
     hud.update(state, mission, false);
